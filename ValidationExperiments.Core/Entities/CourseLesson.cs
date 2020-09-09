@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace ValidationExperiments.Core.Entities
@@ -12,7 +13,10 @@ namespace ValidationExperiments.Core.Entities
         }
 
         public int Id { get; set; }
+
+        [Required]
         public string Name { get; set; }
+
         public string Description { get; set; }
 
         public ICollection<AuthorCourseLesson> Authors { get; set; }

@@ -8,6 +8,13 @@ namespace ValidationExperiments.Business.Validators
 {
     public static class ModelValidator
     {
+        public static void ValidateModel(object model)
+        {
+            var ctx = new ValidationContext(model, null, null);
+            
+            Validator.ValidateObject(model, ctx, true);
+        }
+
         private static IList<ValidationResult> GetModelValidationResults(object model)
         {
             var validationResults = new List<ValidationResult>();
@@ -15,15 +22,6 @@ namespace ValidationExperiments.Business.Validators
             
             Validator.TryValidateObject(model, ctx, validationResults, true);
             return validationResults;            
-        }
-        public static void ValidateModel(object model)
-        {
-            var ctx = new ValidationContext(model, null, null);
-            
-            Validator.ValidateObject(model, ctx, true);
-
-            //if (GetModelValidationResults(model).Count() > 0)
-            //    throw new Exception("Invalid model.");
         }
     }
 }
