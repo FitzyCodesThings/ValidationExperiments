@@ -15,7 +15,7 @@ namespace ValidationExperiments.Tests.Services
     public partial class CourseServiceTests
     {
         [Fact]
-        public async Task GetCourseAsync_ShouldThrowApplicationExceptionWhenIdIsInvalid()
+        public async Task GetCourseAsync_ShouldThrowApplicationExceptionWhenIdIsNotFound()
         {
             // given (arrange)
             int invalidId = 100;
@@ -89,6 +89,40 @@ namespace ValidationExperiments.Tests.Services
 
             // then (assert)
             await Assert.ThrowsAsync<ValidationException>(() => actualCourseTask);
+            appDbContextMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task AddCourseAsync_ShouldNotThrowExceptionForInvalidChildObjectDataAnnotationRequirement()
+        {
+            // Weird test: making sure nothing unexpected changes with the built-in validator
+            // The expectation is that invalid child objects will NOT be detected (so we know we need to handle them elsewhere)
+            // Note: the DB itself SHOULD throw an exception with an invalid child object
+
+            // given (arrange)
+            Filler<Course> courseFiller = new Filler<Course>();
+
+            courseFiller.Setup()
+                .OnProperty(p => p.Id).IgnoreIt();
+
+            Course invalidCourseToAdd = courseFiller.Create();
+
+            invalidCourseToAdd.CourseLessons.First().Authors.First().Author.FirstName = null;
+
+            Course databaseCourse = this.mapper.Map<Course>(invalidCourseToAdd);
+
+            databaseCourse.Id = 1;
+
+            this.appDbContextMock.Setup(db =>
+                db.CreateCourseAsync(invalidCourseToAdd))
+                    .ReturnsAsync(databaseCourse);
+
+            // when (act)
+            Course actualCourse = await subject.AddCourseAsync(invalidCourseToAdd);
+
+            // then (assert)
+            actualCourse.Should().BeEquivalentTo(databaseCourse);
+            appDbContextMock.Verify(db => db.CreateCourseAsync(invalidCourseToAdd), Times.Once);
             appDbContextMock.VerifyNoOtherCalls();
         }
     }

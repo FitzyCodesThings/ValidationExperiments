@@ -110,8 +110,6 @@ namespace ValidationExperiments.Tests.Services
             appDbContextMock.VerifyNoOtherCalls();
         }
 
-        // TODO Decide validation / implement invalid object test case
-
         [Fact]
         public async Task UpdateCourseAsync_ShouldReturnExpectedCourse()
         {
