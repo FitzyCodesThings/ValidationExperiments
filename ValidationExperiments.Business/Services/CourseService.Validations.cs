@@ -18,7 +18,7 @@ namespace ValidationExperiments.Business.Services
 
         private void ValidateCourseHasAtLeastOneLesson(Course course)
         {
-            if (course.CourseLessons.Count() == 0)
+            if (course.CourseLessons == null || course.CourseLessons.Count() == 0)
                 throw new ValidationException("Courses must contain at least one lesson.");
         }
     }

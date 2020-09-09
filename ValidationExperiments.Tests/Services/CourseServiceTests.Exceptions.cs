@@ -93,6 +93,35 @@ namespace ValidationExperiments.Tests.Services
         }
 
         [Fact]
+        public async Task AddCourseAsync_ShouldThrowExceptionForInvalidBusinessLogicRequirementNullList()
+        {
+            // given (arrange)
+            Filler<Course> courseFiller = new Filler<Course>();
+
+            courseFiller.Setup()
+                .OnProperty(p => p.Id).IgnoreIt();
+
+            Course invalidCourseToAdd = courseFiller.Create();
+
+            invalidCourseToAdd.CourseLessons = null;
+
+            Course databaseCourse = this.mapper.Map<Course>(invalidCourseToAdd);
+
+            databaseCourse.Id = 1;
+
+            this.appDbContextMock.Setup(db =>
+                db.CreateCourseAsync(invalidCourseToAdd))
+                    .ReturnsAsync(databaseCourse);
+
+            // when (act)
+            var actualCourseTask = subject.AddCourseAsync(invalidCourseToAdd);
+
+            // then (assert)
+            await Assert.ThrowsAsync<ValidationException>(() => actualCourseTask);
+            appDbContextMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
         public async Task AddCourseAsync_ShouldNotThrowExceptionForInvalidChildObjectDataAnnotationRequirement()
         {
             // Weird test: making sure nothing unexpected changes with the built-in validator
